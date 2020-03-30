@@ -68,6 +68,7 @@ public class OsmAndProtocolDecoder extends BaseHttpProtocolDecoder {
                     case "id":
                     case "deviceid":
                         DeviceSession deviceSession = getDeviceSession(channel, remoteAddress, value);
+                        // position.set("imei", value);
                         if (deviceSession == null) {
                             sendResponse(channel, HttpResponseStatus.BAD_REQUEST);
                             return null;

@@ -158,7 +158,9 @@ public abstract class BaseProtocolDecoder extends ExtendedObjectDecoder {
                 if (connectionManager != null) {
                     connectionManager.addActiveDevice(deviceId, protocol, channel, remoteAddress);
                 }
-                return new DeviceSession(deviceId);
+                DeviceSession s = new DeviceSession(deviceId);
+                s.setOriginalId(uniqueIds);
+                return s;
             } else {
                 return null;
             }
@@ -170,6 +172,7 @@ public abstract class BaseProtocolDecoder extends ExtendedObjectDecoder {
                 return deviceSession;
             } else if (deviceId != 0) {
                 deviceSession = new DeviceSession(deviceId);
+                deviceSession.setOriginalId(uniqueIds);
                 addressDeviceSessions.put(remoteAddress, deviceSession);
                 if (connectionManager != null) {
                     connectionManager.addActiveDevice(deviceId, protocol, channel, remoteAddress);
@@ -183,6 +186,7 @@ public abstract class BaseProtocolDecoder extends ExtendedObjectDecoder {
                 long deviceId = findDeviceId(remoteAddress, uniqueIds);
                 if (deviceId != 0) {
                     channelDeviceSession = new DeviceSession(deviceId);
+                    channelDeviceSession.setOriginalId(uniqueIds);
                     if (connectionManager != null) {
                         connectionManager.addActiveDevice(deviceId, protocol, channel, remoteAddress);
                     }
@@ -237,6 +241,8 @@ public abstract class BaseProtocolDecoder extends ExtendedObjectDecoder {
         }
         long deviceId = 0;
         if (position != null) {
+            String uniqueId = Context.getIdentityManager().getById(position.getDeviceId()).getUniqueId();
+            position.set("imei", uniqueId);
             deviceId = position.getDeviceId();
         } else {
             DeviceSession deviceSession = getDeviceSession(channel, remoteAddress);
