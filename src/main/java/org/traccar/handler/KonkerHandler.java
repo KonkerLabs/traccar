@@ -128,7 +128,7 @@ public class KonkerHandler extends BaseDataHandler {
             data.put("totalDistance", position.getAttributes().get("totalDistance"));
             data.put("gsmSignal", -1);
             data.put("gpsSignal", -1);
-
+            data.put("attr", position.getAttributes());
 
             // sample
             // [{"_lat":-23.41832,"_lon":-46.76391666666667,"_ts":-1,"battery":45,"height":40,"gsmSignal":9,"gpsSpeed":46,"gpsSignal":10,"direction":150,"imei":"086728203271426
