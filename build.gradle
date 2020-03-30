@@ -33,6 +33,7 @@ protobuf {
 }
 
 dependencies {
+    implementation "com.google.code.gson:gson:2.8.6"
     implementation "commons-codec:commons-codec:1.13"
     implementation "com.h2database:h2:1.4.200"
     implementation "mysql:mysql-connector-java:8.0.18"

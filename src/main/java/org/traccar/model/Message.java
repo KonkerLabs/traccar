@@ -24,6 +24,7 @@ public class Message extends ExtendedModel {
     }
 
     public void setDeviceId(long deviceId) {
+
         this.deviceId = deviceId;
     }
 
