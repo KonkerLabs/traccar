@@ -16,6 +16,60 @@ There is also a set of mobile apps that you can use for tracking mobile devices:
 - [Traccar Client Android app](https://github.com/traccar/traccar-client-android)
 - [Traccar Client iOS app](https://github.com/traccar/traccar-client-ios)
 
+## KONKER Integration 
+
+To integrate with KONKER platform, you can use the Dockerized version of this Traccar server with KonkerHandler.
+
+### Architecture
+
+To allow the integration, KONKER platform uses the expansaible Handler configuration of Traccar platform.
+It defines a new KonkerHandler class that handles all messages received by tracking devices (with support for all protocols used by Traccar)
+and encapsulates this data (Position) to pass back to the platform, acting as a GATEWAY device.
+
+All major information required to work with tracking systems are processed and additional data processed by each
+protocol is attached as an attribute ("attr") field on JSON sent to the platform
+
+The conifguration and operation is simple:
+
+* execute the konkerlabs/konker-mis:traccar-4.8.2 server (available at docker hub)
+* define which Gateway credential should be used -- KONKER_AUTH -- environment 
+* export ports to handle specific protocols on the platform
+
+### Configuration
+
+* access the developer portal at Konker platform 
+* create a new Gateway on the account / application that will receive all trackers
+* generate a token for this gateway device -- write down it's access token (TOKEN)
+* on a machine with Docker, execute the traccink integration server, informing the TOKEN received as the token to be used to proceed with the integration, as shown bellow:
+
+docker run \
+-e KONKER_AUTH="Bearer <GATEWAY CREDENTIAL>" \
+--detach \
+--restart always \
+--name traccar \
+--hostname traccar \
+-p 5000-5150:5000-5150 \
+-p 5000-5150:5000-5150/udp \
+-v logs:/opt/traccar/logs:rw \
+konkerlabs/techlab-misc:traccar-4.8.2
+
+* get the Public Server IP where you are running this server
+* if you are running this server on a public cloud (AWS, DigitalOcean), please make sure that network ports are accessible by the world ...
+* configure your device to access the server IP and protocol-specific port 
+    * take a look @ https://www.traccar.org/devices/ for specific devices
+    * if no device make sense, please use the Traccar information to identify specific protocol:
+        * https://www.traccar.org/identify-protocol/
+        * https://www.traccar.org/forums/forum/devices/
+        * to have access to the tracking log ... use "docker log" on the running instance of your server
+
+### Usage
+
+* once configurated the integration, all tracking devices that access this bridge, will automatically create a new device (with IMEI as its ID) 
+* each device will receive on the "location" channel all data for this device
+    * ultra-specific information for each device will be on the "attr" field of JSON payload -- some alarms will display there 
+        depending on the specific device / protocol generation  
+
+
 ## Features
 
 Some of the available features include:
