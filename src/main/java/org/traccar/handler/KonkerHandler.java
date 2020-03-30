@@ -18,9 +18,11 @@ package org.traccar.handler;
 import com.google.gson.Gson;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.traccar.BaseDataHandler;
+import org.traccar.Context;
 import org.traccar.model.Position;
 
 import java.io.*;
@@ -33,17 +35,27 @@ import java.util.Map;
 @ChannelHandler.Sharable
 public class KonkerHandler extends BaseDataHandler {
 
-    private static final String THIRD_PARTY_PROCESSOR = "TEST";
-    private static final String KONKER_URL = "https://data-webhook.prod.konkerlabs.net/default/location";
-    // private static final String KONKER_AUTH =
-    //  "Bearer 4d65e9f5a9054078a1db5420c5d56a8e05ebe2df6dd64d4b8c5c2d76b559c9dc31d0fffc9c3046dfb7cc5363fc5c10cc";
-    private static final String KONKER_AUTH = "Bearer 944dc0ad-415e-4fe2-ace2-91bc7d9f68da";
+    private static String getEnv(String variable, String defaultValue) {
+        String value = System.getenv(variable);
+        if (value == null) {
+            value = defaultValue;
+        }
+        return value;
+    }
 
+    private static final String THIRD_PARTY_PROCESSOR = "TEST";
+    private static final String KONKER_URL = KonkerHandler.getEnv("KONKER_URL", "https://data.prod.konkerlabs.net/gateway/data/pub");
+    private static final String KONKER_AUTH = KonkerHandler.getEnv("KONKER_AUTH", "Bearer 944dc0ad-415e-4fe2-ace2-91bc7d9f68da");
 
     private static final Logger LOGGER = LoggerFactory.getLogger(KonkerHandler.class);
 
     public KonkerHandler() {
         LOGGER.info("KONKER INTEGRATION");
+        LOGGER.info("sending data to {}", KONKER_URL);
+        LOGGER.info("using credentials {}", KONKER_AUTH);
+        // TODO: if credentials are available, request data from the user account using Konker API
+        //       to show which account / tenant are been used to send data to ...
+        //       and test KonkerAPI usage with this credential ...
     }
 
     @Override
@@ -59,8 +71,8 @@ public class KonkerHandler extends BaseDataHandler {
         try {
             // send data to data-
 
-            LOGGER.info("NEW POSITION = {}", position);
-            LOGGER.info("DEVICE ID = {}", position.getDeviceId());
+            LOGGER.debug("NEW POSITION = {}", position);
+            LOGGER.debug("DEVICE ID = {}", position.getDeviceId());
 
             sendToPlatform(position);
 
@@ -73,6 +85,10 @@ public class KonkerHandler extends BaseDataHandler {
 
     private void sendToPlatform(Position position) {
         try {
+            // augument positin with IMEI from device record ...
+            String uniqueId = Context.getIdentityManager().getById(position.getDeviceId()).getUniqueId();
+            position.set("imei", uniqueId);
+
             URL url = new URL(KONKER_URL);
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("POST");
@@ -89,23 +105,39 @@ public class KonkerHandler extends BaseDataHandler {
 
             Map<String, Object> data = new HashMap<>();
 
-            data.put("imei", position.getAttributes().get("imei"));
-            data.put("channel", "position");
-            data.put("lat", position.getLatitude());
-            data.put("lon", position.getLongitude());
-            data.put("ts", position.getDeviceTime().getTime());
+            String imei = (String) position.getAttributes().get("imei");
+
+            if (imei.length() < 12) {
+                imei = StringUtils.leftPad(imei, 12, '0');
+            }
+
+            data.put("imei", imei);
+            data.put("channel", "location");
+            data.put("_lat", position.getLatitude());
+            data.put("_lon", position.getLongitude());
+            data.put("_ts", position.getDeviceTime().getTime());
             data.put("protocol", position.getProtocol());
             data.put("serverTime", position.getServerTime().getTime());
-            data.put("altitude", position.getAltitude());
-            data.put("speed", position.getSpeed());
-            data.put("course", position.getCourse());
+            data.put("height", position.getAltitude());
+            data.put("gpsSpeed", position.getSpeed());
+            data.put("direction", position.getCourse());
             data.put("accuracy", position.getAccuracy());
             data.put("deviceId", position.getDeviceId());
-            data.put("batteryLevel", position.getAttributes().get("batteryLevel"));
+            data.put("battery", position.getAttributes().get("batteryLevel"));
             data.put("distance", position.getAttributes().get("distance"));
             data.put("totalDistance", position.getAttributes().get("totalDistance"));
+            data.put("gsmSignal", -1);
+            data.put("gpsSignal", -1);
+
+
+            // sample
+            // [{"_lat":-23.41832,"_lon":-46.76391666666667,"_ts":-1,"battery":45,"height":40,"gsmSignal":9,"gpsSpeed":46,"gpsSignal":10,"direction":150,"imei":"086728203271426
+            //9","channel":"location"}]
+            // http://data.demo.konkerlabs.net/gateway/data/pub
 
             String payload = gson.toJson(data);
+
+            payload = String.format("[%s]", payload);
 
             DataOutputStream out = new DataOutputStream(con.getOutputStream());
             out.write(payload.getBytes());
@@ -131,15 +163,17 @@ public class KonkerHandler extends BaseDataHandler {
 
             con.disconnect();
 
-
-            LOGGER.info("PAYLOAD = {}", payload);
-            LOGGER.info("status = {}", status);
+            LOGGER.debug("PAYLOAD = {}", payload);
+            LOGGER.debug("OUTPUT => {}", content.toString());
+            LOGGER.debug("status = {}", status);
 
 
         } catch (MalformedURLException e) {
             e.printStackTrace();
+            LOGGER.error("ERROR URL {}", e);
         } catch (IOException e) {
             e.printStackTrace();
+            LOGGER.error("IO ERROR {}", e);
         }
 
 

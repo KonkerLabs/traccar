@@ -241,8 +241,6 @@ public abstract class BaseProtocolDecoder extends ExtendedObjectDecoder {
         }
         long deviceId = 0;
         if (position != null) {
-            String uniqueId = Context.getIdentityManager().getById(position.getDeviceId()).getUniqueId();
-            position.set("imei", uniqueId);
             deviceId = position.getDeviceId();
         } else {
             DeviceSession deviceSession = getDeviceSession(channel, remoteAddress);
