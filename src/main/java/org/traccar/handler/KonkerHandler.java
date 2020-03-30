@@ -45,7 +45,7 @@ public class KonkerHandler extends BaseDataHandler {
 
     private static final String THIRD_PARTY_PROCESSOR = "TEST";
     private static final String KONKER_URL = KonkerHandler.getEnv("KONKER_URL", "https://data.prod.konkerlabs.net/gateway/data/pub");
-    private static final String KONKER_AUTH = KonkerHandler.getEnv("KONKER_AUTH", "Bearer 944dc0ad-415e-4fe2-ace2-91bc7d9f68da");
+    private static final String KONKER_AUTH = KonkerHandler.getEnv("KONKER_AUTH", "Bearer <GATEWAY TOKEN>");
 
     private static final Logger LOGGER = LoggerFactory.getLogger(KonkerHandler.class);
 
