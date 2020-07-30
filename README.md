@@ -43,15 +43,15 @@ The conifguration and operation is simple:
 * on a machine with Docker, execute the traccink integration server, informing the TOKEN received as the token to be used to proceed with the integration, as shown bellow:
 
 docker run \
--e KONKER_AUTH="Bearer <GATEWAY CREDENTIAL>" \
 --detach \
 --restart always \
 --name traccar \
 --hostname traccar \
 -p 5000-5150:5000-5150 \
 -p 5000-5150:5000-5150/udp \
--v logs:/opt/traccar/logs:rw \
-konkerlabs/techlab-misc:traccar-4.8.2
+-v /home/rancher/logs:/opt/traccar/logs:rw \
+-e KONKER_AUTH="Bearer <GATEWAY CREDENTIAL>" \
+konkerlabs/techlab-misc:traccar-4.8.3
 
 * get the Public Server IP where you are running this server
 * if you are running this server on a public cloud (AWS, DigitalOcean), please make sure that network ports are accessible by the world ...
@@ -61,6 +61,12 @@ konkerlabs/techlab-misc:traccar-4.8.2
         * https://www.traccar.org/identify-protocol/
         * https://www.traccar.org/forums/forum/devices/
         * to have access to the tracking log ... use "docker log" on the running instance of your server
+
+### Notes when using DIGITAL OCEAN
+
+* create a container-based droplet (RancherOS) -- mininum 10USD/mon machine
+* log and enable swap file - 4Gb as stated on https://www.digitalocean.com/community/tutorials/how-to-add-swap-on-centos-7
+* 
 
 ### Usage
 
