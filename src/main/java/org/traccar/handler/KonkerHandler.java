@@ -115,7 +115,11 @@ public class KonkerHandler extends BaseDataHandler {
             data.put("channel", "location");
             data.put("_lat", position.getLatitude());
             data.put("_lon", position.getLongitude());
-            data.put("_ts", position.getDeviceTime().getTime());
+            // FIX: use position.getFixTime() to avoid problems when receiving events from the past ... 
+            //      otherwise the old events will be injested as new one on the platform
+            // 
+            // data.put("_ts", position.getDeviceTime().getTime()); 
+            data.put("_ts", position.getFixTime().getTime()); // use device fix time to send this data to the platform 
             data.put("protocol", position.getProtocol());
             data.put("serverTime", position.getServerTime().getTime());
             data.put("height", position.getAltitude());
