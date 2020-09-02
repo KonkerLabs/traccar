@@ -51,7 +51,7 @@ docker run \
 -p 5000-5150:5000-5150/udp \
 -v /home/rancher/logs:/opt/traccar/logs:rw \
 -e KONKER_AUTH="Bearer <GATEWAY CREDENTIAL>" \
-konkerlabs/techlab-misc:traccar-4.8.3
+konkerlabs/techlab-misc:traccar-4.8.4
 
 * get the Public Server IP where you are running this server
 * if you are running this server on a public cloud (AWS, DigitalOcean), please make sure that network ports are accessible by the world ...
@@ -91,6 +91,17 @@ Some of the available features include:
 ## Build
 
 Please read [build from source documentation](https://www.traccar.org/build/) on the official website.
+
+specific local build / publishing ...
+
+- to compile locally 
+    gradle build
+
+- to create the docker image to be published; replace #.#.# by new version #
+    docker build . -t konkerlabs/techlab-misc:traccar-#.#.#
+
+- to publish docker image 
+    docker push konkerlabs/techlab-misc:traccar-#.#.#
 
 ## Team
 
