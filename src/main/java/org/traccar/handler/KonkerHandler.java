@@ -25,7 +25,11 @@ import org.traccar.BaseDataHandler;
 import org.traccar.Context;
 import org.traccar.model.Position;
 
-import java.io.*;
+import java.io.Reader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -44,7 +48,8 @@ public class KonkerHandler extends BaseDataHandler {
     }
 
     private static final String THIRD_PARTY_PROCESSOR = "TEST";
-    private static final String KONKER_URL = KonkerHandler.getEnv("KONKER_URL", "https://data.prod.konkerlabs.net/gateway/data/pub");
+    private static final String KONKER_URL = KonkerHandler.getEnv("KONKER_URL",
+        "https://data.prod.konkerlabs.net/gateway/data/pub");
     private static final String KONKER_AUTH = KonkerHandler.getEnv("KONKER_AUTH", "Bearer <GATEWAY TOKEN>");
 
     private static final Logger LOGGER = LoggerFactory.getLogger(KonkerHandler.class);
@@ -53,7 +58,7 @@ public class KonkerHandler extends BaseDataHandler {
         LOGGER.info("KONKER INTEGRATION");
         LOGGER.info("sending data to {}", KONKER_URL);
         LOGGER.info("using credentials {}", KONKER_AUTH);
-        // TODO: if credentials are available, request data from the user account using Konker API
+        // NOTE: if credentials are available, request data from the user account using Konker API
         //       to show which account / tenant are been used to send data to ...
         //       and test KonkerAPI usage with this credential ...
     }
@@ -115,11 +120,11 @@ public class KonkerHandler extends BaseDataHandler {
             data.put("channel", "location");
             data.put("_lat", position.getLatitude());
             data.put("_lon", position.getLongitude());
-            // FIX: use position.getFixTime() to avoid problems when receiving events from the past ... 
+            // FIX: use position.getFixTime() to avoid problems when receiving events from the past ...
             //      otherwise the old events will be injested as new one on the platform
-            // 
-            // data.put("_ts", position.getDeviceTime().getTime()); 
-            data.put("_ts", position.getFixTime().getTime()); // use device fix time to send this data to the platform 
+            //
+            // data.put("_ts", position.getDeviceTime().getTime());
+            data.put("_ts", position.getFixTime().getTime()); // use device fix time to send this data to the platform
             data.put("protocol", position.getProtocol());
             data.put("serverTime", position.getServerTime().getTime());
             data.put("height", position.getAltitude());
@@ -135,7 +140,9 @@ public class KonkerHandler extends BaseDataHandler {
             data.put("attr", position.getAttributes());
 
             // sample
-            // [{"_lat":-23.41832,"_lon":-46.76391666666667,"_ts":-1,"battery":45,"height":40,"gsmSignal":9,"gpsSpeed":46,"gpsSignal":10,"direction":150,"imei":"086728203271426
+            // [{"_lat":-23.41832,"_lon":-46.76391666666667,"_ts":-1,
+            // "battery":45,"height":40,"gsmSignal":9,"gpsSpeed":46,"gpsSignal":10,
+            // "direction":150,"imei":"086728203271426
             //9","channel":"location"}]
             // http://data.demo.konkerlabs.net/gateway/data/pub
 
